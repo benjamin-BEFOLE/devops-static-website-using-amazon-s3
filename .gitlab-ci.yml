@@ -1,0 +1,45 @@
+variables:
+  TERRAFORM_VERSION: 1.8.3
+
+stages:
+  - test
+  - syntaxe
+  - deploy
+  - destroy
+
+.terraform_job_template:
+  image:
+    name: hashicorp/terraform:${TERRAFORM_VERSION}
+    entrypoint: [""]
+
+lint:
+  stage: test
+  extends: .terraform_job_template
+  script:
+    - terraform fmt -recursive -check
+
+syntaxe:
+  stage: syntaxe
+  extends: .terraform_job_template
+  script:
+    - terraform --version
+    - terraform init
+    - terraform plan
+
+deploy:
+  stage: deploy
+  extends: .terraform_job_template
+  when: manual
+  script:
+    - terraform --version
+    - terraform init
+    - terraform apply --auto-approve
+
+destroy:
+  stage: destroy
+  extends: .terraform_job_template
+  when: manual
+  script:
+    - terraform --version
+    - terraform init
+    - terraform destroy --auto-approve
