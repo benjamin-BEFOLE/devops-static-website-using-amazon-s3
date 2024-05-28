@@ -1,8 +1,10 @@
+# Create bucket
 resource "aws_s3_bucket" "website_bucket" {
   bucket        = var.website_bucket_name
   force_destroy = true
 }
 
+# Enable Public Access
 resource "aws_s3_bucket_public_access_block" "website_public_access_block" {
   bucket = aws_s3_bucket.website_bucket.id
 
@@ -12,6 +14,13 @@ resource "aws_s3_bucket_public_access_block" "website_public_access_block" {
   restrict_public_buckets = false
 }
 
+# Update bucket policy to allow anyone to get the objects of bucket
+resource "aws_s3_bucket_policy" "website_bucket_policy" {
+  bucket = aws_s3_bucket.website_bucket.id
+  policy = data.template_file.name.rendered
+}
+
+# Add website pages to bucket
 resource "aws_s3_object" "s3_object_index" {
   key          = "index.html"
   bucket       = aws_s3_bucket.website_bucket.id
@@ -26,11 +35,7 @@ resource "aws_s3_object" "s3_object_error" {
   content_type = "text/html"
 }
 
-resource "aws_s3_bucket_policy" "website_bucket_policy" {
-  bucket = aws_s3_bucket.website_bucket.id
-  policy = data.template_file.name.rendered
-}
-
+# Configure bucket to host website pages
 resource "aws_s3_bucket_website_configuration" "website_configuration" {
   bucket = aws_s3_bucket.website_bucket.id
 
